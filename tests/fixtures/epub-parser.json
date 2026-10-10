@@ -1,0 +1,499 @@
+[
+  {
+    "name": "inline",
+    "documents": [
+      "<html><body><h1> First <em>Heading</em> </h1><p>One <b>bold</b> word and <i>one</i> tail.</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "FirstHeading",
+        "text": "First\n\nHeading\n\nOne\n\nbold\n\nword and\n\none\n\ntail.\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "entities",
+    "documents": [
+      "<html><body><h1>A &amp; B</h1><p>&lt;safe&gt; &quot;quoted&quot; &apos;single&apos; &#65; &#10; &#9;</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "A & B",
+        "text": "A & B\n\n<safe> \"quoted\" 'single' A\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "unicode",
+    "documents": [
+      "<html><body><h1>Café — 渡船</h1><p>“Naïve” travellers share piñatas and a smile: 😀.</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Café — 渡船",
+        "text": "Café — 渡船\n\n“Naïve” travellers share piñatas and a smile: 😀.\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "nonbreaking",
+    "documents": [
+      "<html><body><h1>A&nbsp;B</h1><p>One&#160;two&#x2003;three</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "A B",
+        "text": "A B\n\nOne two three\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "whitespace",
+    "documents": [
+      "<html><body><h1>\n  Spaces\t and\nlines  </h1><p> A\n B\r\n C\t D </p><div> \n </div><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Spaces\t and\nlines",
+        "text": "Spaces\t and\n\nlines\n\nA\n\nB\n\nC\t D\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "preformatted",
+    "documents": [
+      "<html><body><h1>Pre</h1><pre>    One\n    two\tthree\n</pre><textarea>Four &amp; five</textarea><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Pre",
+        "text": "Pre\n\nOne\n\ntwo\tthree\n\nFour & five\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "comments",
+    "documents": [
+      "<html><body><h1>Head<!--ignore-->Tail</h1><p>First<!-- omitted -->Second<!--again-->Third</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "HeadTail",
+        "text": "Head\n\nTail\n\nFirst\n\nSecond\n\nThird\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "processing",
+    "documents": [
+      "<html><body><h1>Process</h1><p>Before<?book instruction?>After</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Process",
+        "text": "Process\n\nBefore\n\nAfter\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "cdata",
+    "documents": [
+      "<html><body><h1>Data</h1><p>Before<![CDATA[<hidden>quoted</hidden>]]>After</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Data",
+        "text": "Data\n\nBefore\n\nquoted]]>After\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "script_style",
+    "documents": [
+      "<html><body><h1>Visible</h1><script>window.title = '<h1>Hidden</h1>';</script><style>.x { color: red; }</style><p>After code</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Visible",
+        "text": "Visible\n\nAfter code\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "template",
+    "documents": [
+      "<html><body><template><h1>Template title</h1><p>Template words</p></template><h1>Visible title</h1><p>Visible words</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "",
+        "text": "Visible title\n\nVisible words\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "ruby",
+    "documents": [
+      "<html><body><h1>Ruby</h1><ruby>Base<rp>(</rp><rt>Reading</rt><rp>)</rp></ruby><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Ruby",
+        "text": "Ruby\n\nBase\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "uppercase",
+    "documents": [
+      "<html><body><H1>UPPER <EM>Heading</EM></H1><P>Mixed CASE</P><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "UPPERHeading",
+        "text": "UPPER\n\nHeading\n\nMixed CASE\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "heading_order",
+    "documents": [
+      "<html><body><h2>Second level first</h2><h1>First level second</h1><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Second level first",
+        "text": "Second level first\n\nFirst level second\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "empty_heading",
+    "documents": [
+      "<html><body><h1></h1><h2>Later heading</h2><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "",
+        "text": "Later heading\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "no_heading",
+    "documents": [
+      "<html><body><p>Only paragraphs precede the longer prose.</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Unknown Chapter",
+        "text": "Only paragraphs precede the longer prose.\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "h3_only",
+    "documents": [
+      "<html><body><h3>Not a chapter heading</h3><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Unknown Chapter",
+        "text": "Not a chapter heading\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "nested_headings",
+    "documents": [
+      "<html><body><h1>Outer<h2>Inner</h2>Tail</h1><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "OuterInnerTail",
+        "text": "Outer\n\nInner\n\nTail\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "unclosed",
+    "documents": [
+      "<html><body><h1>Open heading<p>Open paragraph<b>Bold words<i>Italic words<p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Open heading",
+        "text": "Open heading\n\nOpen paragraph\n\nBold words\n\nItalic words\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "mismatched",
+    "documents": [
+      "<html><body><h1>Mismatch</h1><div><p>One</div>Two</p>Three</span><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Mismatch",
+        "text": "Mismatch\n\nOne\n\nTwoThree\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "broken_attribute",
+    "documents": [
+      "<html><body><h1 data-note='A > B'>Attribute</h1><p data-broken=one two>Body</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Attribute",
+        "text": "Attribute\n\nBody\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "voids",
+    "documents": [
+      "<html><body><h1>Void</h1><p>A<br>B<hr>C<img alt='ignored'>D<input>E<wbr>F</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Void",
+        "text": "Void\n\nA\n\nB\n\nC\n\nD\n\nE\n\nF\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "legacy_void_children",
+    "documents": [
+      "<html><body><h1>Old voids</h1><command>One<b>Two</b></command><keygen>Three</keygen><menuitem>Four</menuitem><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Old voids",
+        "text": "Old voids\n\nOne\n\nTwo\n\nThree\n\nFour\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "self_closed",
+    "documents": [
+      "<html><body><h1>Closed</h1><section/><p>A<br/>B<custom/>C</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Closed",
+        "text": "Closed\n\nA\n\nB\n\nC\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "custom_tags",
+    "documents": [
+      "<html><body><h1>Custom</h1><custom-one>One<custom-two>Two</custom-two>Three</custom-one><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Custom",
+        "text": "Custom\n\nOne\n\nTwo\n\nThree\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "namespace",
+    "documents": [
+      "<html><body><h1 xmlns='urn:sample'>Qualified heading</h1><p xmlns='urn:sample'>Qualified text</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Qualified heading",
+        "text": "Qualified heading\n\nQualified text\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "prefix",
+    "documents": [
+      "<html><body><x:h1 xmlns:x='urn:sample'>Prefixed heading</x:h1><h2>Ordinary heading</h2><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Ordinary heading",
+        "text": "Prefixed heading\n\nOrdinary heading\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "table",
+    "documents": [
+      "<html><body><h1>Table</h1><table>Loose text<tr><td>A<td>B</table>After<p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Table",
+        "text": "Table\n\nLoose text\n\nA\n\nB\n\nAfter\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "list",
+    "documents": [
+      "<html><body><h1>List</h1><ul><li>One<li>Two</ul><dl><dt>Term<dd>Definition</dl><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "List",
+        "text": "List\n\nOne\n\nTwo\n\nTerm\n\nDefinition\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "title_in_body",
+    "documents": [
+      "<html><body><title>Body title</title><h1>Following heading</h1><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Body title",
+        "text": "Body title\n\nFollowing heading\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "escaped_markup",
+    "documents": [
+      "<html><body><h1>Literal</h1><p>&lt;script&gt;safe&lt;/script&gt; &amp;amp; &notarealentity;</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Literal",
+        "text": "Literal\n\n<script>safe</script> &amp; ¬arealentity;\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "deep_inline",
+    "documents": [
+      "<html><body><h1>Nested</h1><p><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span><span>Text</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></span></p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Nested",
+        "text": "Nested\n\nText\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "control",
+    "documents": [
+      "<html><body><h1>Control</h1><p>Before\u0000After\u0001End</p><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Control",
+        "text": "Control\n\nBeforeï¿½After�End\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "body_attributes",
+    "documents": [
+      "<html><body class='reader' dir='rtl'><h1>Attributes</h1><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p></body></html>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Attributes",
+        "text": "Attributes\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  },
+  {
+    "name": "text_only",
+    "documents": [
+      "<html><body>Plain text with no child elements. Plain text with no child elements. Plain text with no child elements. Plain text with no child elements. Plain text with no child elements. Plain text with no child elements. Plain text with no child elements. Plain text with no child elements. </body></html>"
+    ],
+    "chapters": []
+  },
+  {
+    "name": "empty",
+    "documents": [
+      "<html><body></body></html>"
+    ],
+    "chapters": []
+  },
+  {
+    "name": "short",
+    "documents": [
+      "<html><body><h1>Short</h1><p>Tiny.</p></body></html>"
+    ],
+    "chapters": []
+  },
+  {
+    "name": "dedup_and_titles",
+    "documents": [
+      "<h1>Same</h1><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p>",
+      "<h1>Same</h1><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p>",
+      "<h1>Same</h1><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p><p>Extra paragraph</p>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Same",
+        "text": "Same\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      },
+      {
+        "id": "0002",
+        "title": "Same (2)",
+        "text": "Same\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.\n\nExtra paragraph"
+      }
+    ]
+  },
+  {
+    "name": "short_title_reservation",
+    "documents": [
+      "<h1>Same</h1><p>Tiny.</p>",
+      "<h1>Same</h1><p>The keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier.</p>"
+    ],
+    "chapters": [
+      {
+        "id": "0000",
+        "title": "Same (0)",
+        "text": "Same\n\nThe keeper reads a map beside the harbor. Every boat has a name and every route has a number. The quiet crew waits until dawn before leaving the pier."
+      }
+    ]
+  }
+]

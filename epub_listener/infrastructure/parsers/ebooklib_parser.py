@@ -3,6 +3,7 @@
 import logging
 import warnings
 from pathlib import Path
+from xml.etree import ElementTree
 
 import ebooklib
 from bs4 import BeautifulSoup
@@ -17,6 +18,81 @@ logger = logging.getLogger(__name__)
 # EbookLib is noisy about future versions; suppress once at module load.
 warnings.filterwarnings("ignore", category=UserWarning, module="ebooklib.epub")
 warnings.filterwarnings("ignore", category=FutureWarning, module="ebooklib.epub")
+
+
+_TEXT_TAGS = frozenset(
+    {
+        "body",
+        "p",
+        "div",
+        "span",
+        "section",
+        "article",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "title",
+        "em",
+        "strong",
+        "b",
+        "i",
+        "u",
+        "s",
+        "a",
+        "blockquote",
+        "ul",
+        "ol",
+        "li",
+        "dl",
+        "dt",
+        "dd",
+        "sub",
+        "sup",
+        "small",
+        "br",
+        "hr",
+        "img",
+    }
+)
+_VOID_TAGS = frozenset({"br", "hr", "img"})
+
+
+def _extract_body(body: bytes) -> tuple[str, str]:
+    """Read ordinary serialized markup without building a second HTML tree."""
+    # EbookLib serializes the body as UTF-8 XML. Keep BeautifulSoup's encoding
+    # detection and HTML-specific string rules for anything outside this subset.
+    if body.isascii() and b"<!" not in body and b"<?" not in body:
+        try:
+            root = ElementTree.fromstring(  # noqa: S314 - DTDs and declarations excluded above
+                b"<root>" + body + b"</root>"
+            )
+        except ElementTree.ParseError:
+            pass
+        else:
+            elements = list(root.iter())[1:]
+            if all(
+                element.tag in _TEXT_TAGS
+                and not (element.tag in _VOID_TAGS and (element.text or len(element)))
+                for element in elements
+            ):
+                xml_heading = next(
+                    (element for element in elements if element.tag in {"h1", "h2", "title"}),
+                    None,
+                )
+                title = (
+                    "".join(text.strip() for text in xml_heading.itertext())
+                    if xml_heading is not None
+                    else "Unknown Chapter"
+                )
+                return title, "\n".join(root.itertext())
+
+    soup = BeautifulSoup(body, "html.parser")
+    heading = soup.find(["h1", "h2", "title"])
+    title = heading.get_text(strip=True) if heading else "Unknown Chapter"
+    return title, soup.get_text(separator="\n")
 
 
 class EbookLibParser(ChapterParser):
@@ -47,16 +123,12 @@ class EbookLibParser(ChapterParser):
             if isinstance(item, epub.EpubNav):
                 continue
 
-            soup = BeautifulSoup(item.get_body_content(), "html.parser")
-
-            heading = soup.find(["h1", "h2", "title"])
-            title = heading.get_text(strip=True) if heading else "Unknown Chapter"
+            title, text = _extract_body(item.get_body_content())
 
             if title in seen_titles:
                 title = f"{title} ({doc_index})"
             seen_titles.add(title)
 
-            text = soup.get_text(separator="\n")
             cleaned_lines = [line.strip() for line in text.split("\n") if line.strip()]
             cleaned_text = "\n\n".join(cleaned_lines)
 
