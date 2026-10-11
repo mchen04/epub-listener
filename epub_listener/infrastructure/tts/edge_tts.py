@@ -27,9 +27,9 @@ DEFAULT_EDGE_TTS_TIMEOUT_SECONDS = 300
 
 # WordBoundary offsets/durations are reported in 100-nanosecond ticks.
 _TICKS_PER_MS = 10_000
-# Measured against acoustic speech onsets in the delivered MP3 audio, Edge's
-# WordBoundary offsets run consistently ~100 ms early (median -106 ms over a
-# 24-word calibration set; see docs/evidence/read-along-ledger.md).
+# Existing word-boundary correction; offline tests check its arithmetic.
+# Current acoustic accuracy is not established by this suite.
+# See docs/evidence/read-along-ledger.md for the evidence limits.
 _BOUNDARY_LEAD_CORRECTION_MS = 100
 
 

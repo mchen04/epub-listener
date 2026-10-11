@@ -96,7 +96,7 @@ def _extract_body(body: bytes) -> tuple[str, str]:
 
 
 class EbookLibParser(ChapterParser):
-    """Parses EPUB files into Chapter objects using EbookLib + BeautifulSoup."""
+    """Parse EbookLib documents with restricted XML extraction and HTML fallback."""
 
     MIN_CHAPTER_LENGTH = 100  # characters; filters frontmatter / debris
 

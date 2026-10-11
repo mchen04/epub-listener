@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- Extract ordinary ASCII EPUB markup through a restricted fast path, with BeautifulSoup fallback and 39 additional characterization cases.
+- Defer configuration and backend imports until after CLI argument parsing.
+- Remove an unused private alignment argument; keep public interfaces and all existing tests.
+- Strengthen two resume test groups so unrelated cache invalidation cannot mask their intended checks.
+- Ignore local environments and check caches; retain historical evidence and source fixtures.
+- Update CLI, installation, backend, resume, transcript, architecture, development, and troubleshooting documentation.
+- Replace unsupported performance and acoustic claims with bounded measurements and explicit limits.
+- Completed resumes still reassemble through FFmpeg; the attempted assembly cache is rejected and reverted.
+
+See [Performance](docs/PERFORMANCE.md) for measurements and [Development](docs/DEVELOPMENT.md) for retained checks.
+The local run does not establish current live-service or neural-model correctness.
+
 ## 2.1.0 — 2026-08-09
 
 ### Added
@@ -22,9 +36,8 @@
 - Hugging Face custom repository code is disabled by default, offline state is restored after loading, and model outputs are validated before encoding.
 - Runtime preflight checks report missing FFmpeg, optional packages, and local executables before EPUB parsing or model downloads begin.
 
-### Verified
+### Verification scope
 
-- 196 default tests and all 11 live integration/model tests passed.
-- Live coverage included Edge-TTS, Kokoro CPU, hybrid MPS, MLX Kokoro, and `facebook/mms-tts-eng` from the Hub, offline cache, and a local model directory.
-- Acoustic timing gates passed for Edge and Kokoro with zero chapter-marker shift.
-- Black, Ruff security lint, mypy, wheel/sdist builds, a clean base-wheel installation, and an installed-wheel EPUB-to-MP3 command-backend conversion passed.
+The earlier release notes asserted live-model and acoustic results without reproducible receipts in this checkout.
+Those assertions are removed from the current verification claim.
+The historical transcript observation file remains labeled in [the evidence note](docs/evidence/read-along-ledger.md).

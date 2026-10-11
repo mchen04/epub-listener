@@ -26,8 +26,8 @@ from epub_listener.infrastructure.tts.identity import (
 
 DEFAULT_KOKORO_PRESET = "ship-q8"
 
-# Distilled presets: ~10M active params, far faster but single-voice
-# (af_heart), fixed-speed, and unable to report per-token timestamps.
+# Student presets require one voice and the default speed.
+# Their chunk spans provide sentence timing when tokens are unavailable.
 STUDENT_KOKORO_PRESETS = frozenset({"student", "student-fast", "student-exact-prosody"})
 STUDENT_PRESET_VOICE = "af_heart"
 

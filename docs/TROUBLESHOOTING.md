@@ -1,75 +1,89 @@
 # Troubleshooting
 
-## Resuming an Interrupted Build
+## Resume
 
-When a fresh build is interrupted or fails, the program prints the temp directory path:
+Use the path printed after an interrupted or failed build:
 
-```
-Resume with: --resume-dir /tmp/epub_audiobook_abc123
-```
-
-Pass that path on the next run to skip already-completed chapters:
-
-```bash
-python -m epub_listener my_book.epub --resume-dir /tmp/epub_audiobook_abc123
+```sh
+epub-listener book.epub --resume-dir /path/to/existing-workspace
 ```
 
-The progress tracker uses **SHA-256 checksums** of chapter text. If the EPUB content changed between runs (e.g., re-downloaded with different formatting), affected chapters are regenerated automatically.
+The directory must exist.
+It contains `progress.json`, chapter MP3s, chapter transcripts, and metadata.
+A successful fresh build removes its automatic workspace.
+An explicit resume directory remains.
 
-**Note**: On a successful fresh build, the auto-created temp dir is deleted. Interrupted/failed fresh builds preserve it, and user-supplied resume dirs are never deleted by the program.
+Changed chapter text, voice, speed, or backend identity can regenerate chapter audio.
+Missing or empty chapter audio also requires generation.
+Enabling transcripts regenerates cached chapters that lack transcript files.
+Changing title, author, or destination rebuilds final output metadata without requiring new narration.
 
-## FFmpeg Not Found
+Resume trusts recorded durations and existing non-empty chapter files.
+It does not detect every byte replacement, damaged transcript, changed external model, or concurrent write.
+Local model signatures sample large files; they are not complete content hashes.
+Use a new workspace if cached files are suspect.
+Do not run concurrent builds against one workspace or destination.
+A malformed progress file produces a resume error; preserve it for diagnosis.
 
-Ensure `ffmpeg` and `ffprobe` are in your PATH:
+Final output is always assembled again, including completed resumes.
+No assembly cache marker or reuse lock is created.
 
-```bash
-which ffmpeg
-which ffprobe
-```
+## Missing tools or models
 
-macOS: `brew install ffmpeg`
+Check that `ffmpeg` and `ffprobe` are in `PATH`.
+On macOS, `brew install ffmpeg` installs both.
 
-## Kokoro OOM / Slow
+Install the selected optional adapter with `python -m pip install -e '.[kokoro]'`, `'.[huggingface]'`, or `'.[mlx]'`.
+The MLX extra provides `mlx-audio`, not FastKokoro.
+An explicit FastKokoro preset fails if that separate package is absent.
+Kokoro may also need `espeak-ng`.
 
-Kokoro is CPU/GPU intensive. It uses process-local model caches in parallel mode. Reduce `--max-workers` (default: 4) or use `--concurrency sequential`.
+Model weights can require a download on first use.
+Hugging Face `--local-files-only` requires an already cached model or a complete local model directory.
+A repository must support the installed Transformers TTS pipeline.
+Additional model inputs belong in `--model-options` or `--speaker-embedding`.
+Review repository code before enabling `--trust-remote-code`.
 
-```bash
-python -m epub_listener book.epub --use-kokoro --max-workers 1 --concurrency sequential
-```
+## Resource or model failures
 
-The preferred equivalent is `--engine kokoro`. Kokoro is optional; install it with `pip install -e '.[kokoro]'`.
+Reduce Kokoro workers or use `--concurrency sequential` to limit model copies.
+Hybrid MPS mode requires the Kokoro engine and parallel or automatic scheduling.
+Hugging Face, MLX, and commands use sequential scheduling.
+For Hugging Face device errors, try `--device cpu --dtype float32`.
+For input limits, reduce `--chunk-chars`; character limits do not guarantee model token limits.
+A value of 0 delegates long-input handling to the model or wrapper.
 
-## Hugging Face Model Does Not Load
+## Command failures
 
-Install the adapter and common inference dependencies:
+The template requires `{output}`; `{text_file}` and `{voice}` are optional.
+Text arrives on stdin and in the temporary text file.
+The executable must exit zero and write decodable audio in the declared format.
+The command runs without shell expansion, pipes, or redirects.
+Use a wrapper for operations that require a shell.
 
-```bash
-pip install -e '.[huggingface]'
-```
+`--model-timeout` applies to each command chunk.
+Timeout handling terminates the command process group on POSIX while the parent process remains active.
+Detached descendants are outside that guarantee.
+Error messages include a bounded diagnostic tail.
+Failed generation preserves the previous chapter output until a validated replacement is ready.
+A directory synchronization failure can occur after replacement.
 
-Confirm the repository supports the Transformers `text-to-speech` pipeline, not merely a custom README script. Model-specific dependencies and inputs are listed on its model card. Pass architecture inputs with `--model-options @options.json`, or use `--speaker-embedding` for SpeechT5. A custom-script-only repository can be wrapped with `--engine command`.
+## Chapters, transcripts, and logs
 
-Remote repository code is intentionally disabled. If a reviewed model requires it, pin `--revision` to a commit and add `--trust-remote-code`. Do not enable that flag for an untrusted repository.
+Chapter navigation depends on the player's ID3 support.
+Inspect chapter metadata with `ffprobe` if the player shows no chapters.
+The parser excludes navigation documents, short text below 100 characters, and exact duplicate text.
+It reads document item order rather than reconstructing all EPUB reading-order rules.
 
-If MPS or CUDA fails for a model, establish correctness first with:
+Transcript embedding errors warn and leave the build reported as successful.
+Check `logs/epub_listener.log` for missing or invalid chapter transcript files.
+The sidecar path is `<output-stem>.transcript.json`.
+A failed embed or `--no-transcript` does not delete an older sidecar at that path.
+Treat the MP3's embedded frame as authoritative.
+Sentence estimates are not word-level acoustic alignment.
 
-```bash
-epub-listener book.epub --engine huggingface --model org/model \
-  --device cpu --dtype float32
-```
-
-For token-length errors, lower `--chunk-chars`; for a model with its own long-text processor, use `--chunk-chars 0`.
-
-## Local Command Fails
-
-The template must contain `{output}` and the executable must write the declared `--command-output-format`. Text arrives on stdin and at `{text_file}`. The adapter does not invoke a shell, so pipes, redirects, environment assignments, and shell expansion are not interpreted; put those operations in a reviewed wrapper script.
-
-Run the executable directly with a short input, then retry with `--log-level DEBUG`. Increase `--model-timeout` for slow hardware. Failed and timed-out commands leave an existing completed chapter untouched and keep the build workspace for resume.
-
-## Edge-TTS Connection Errors
-
-Edge-TTS requires an internet connection. If you hit rate limits or transient service errors, reduce async concurrency with `--max-workers`.
-
-## Output MP3 Has No Chapters
-
-Ensure your player supports ID3v2.3 chapter metadata. VLC, QuickTime, and most modern players do. Some older players may not.
+Logging uses a console handler and a rotating file in the current working directory.
+The root level follows `--log-level`; the console handler accepts INFO and above.
+Caught domain errors exit 1, syntax errors exit 2, and caught interrupts exit 130.
+Unexpected errors can still show a traceback.
+Edge requires network access; service failures are not covered by offline checks.

@@ -174,20 +174,20 @@ def parse_args() -> Settings:
         "--kokoro-hybrid-mps",
         action="store_true",
         default=argparse.SUPPRESS,
-        help="Use a tuned Apple MPS + CPU Kokoro worker pair",
+        help="Use one Apple MPS worker and one CPU Kokoro worker",
     )
     parser.add_argument(
         "--kokoro-mlx",
         action="store_true",
         default=argparse.SUPPRESS,
-        help="Use Apple MLX for faster Kokoro inference",
+        help="Use Apple MLX for Kokoro inference",
     )
     parser.add_argument(
         "--kokoro-preset",
         default=argparse.SUPPRESS,
         help=(
-            "FastKokoro model preset: ship-q8 (default, balanced), ship-q4 (smaller), "
-            "exact (highest fidelity), student-fast (fastest; af_heart only, "
+            "FastKokoro model preset: ship-q8 (default), ship-q4, "
+            "exact, student-fast (af_heart only, "
             "+0%% speed only, no word timings)"
         ),
     )

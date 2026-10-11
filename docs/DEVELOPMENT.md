@@ -2,101 +2,109 @@
 
 ## Setup
 
-```bash
+```sh
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements-dev.txt
-
-# Include generic Transformers support when working on it
-pip install -e '.[dev,kokoro,huggingface]'
-
-# Optional Apple MLX adapter and its live smoke test
-pip install -e '.[dev,mlx]'
+python -m pip install -e '.[dev,kokoro]' types-requests
 ```
 
-## Code quality
+The offline model-adapter tests need PyTorch and Hub support supplied with the Kokoro setup.
+The mypy check also needs the requests stubs from `types-requests`.
+Add `huggingface` or `mlx` when working with those real engines.
+`requirements-dev.txt` installs development tools and Kokoro; install the requests stubs separately.
+Install FFmpeg and ffprobe for the default suite's local media checks.
 
-```bash
-# Format
-black epub_listener/ tests/
+## Required checks
 
-# Lint
-ruff check epub_listener/ tests/
-
-# Type check
-mypy epub_listener/
-
-# Offline/default suite
-pytest
-
-# Live network and real-model smoke tests
-pytest -m live
-```
-
-## Extending TTS support
-
-Most local models need no Python adapter:
-
-- A Transformers-compatible TTS repository works through `--engine huggingface --model ...` and namespaced `--model-options`.
-- Any executable that accepts text and writes audio works through `--engine command`; see [`MODELS.md`](MODELS.md).
-
-Only add an infrastructure adapter for a genuinely different transport or a model API that can expose materially better timing/performance than those generic paths.
-
-### Adding an adapter
-
-1. Create `epub_listener/infrastructure/tts/my_tts.py`.
-2. Implement the `TTSProvider` protocol from `epub_listener/infrastructure/tts/ports.py`, or subclass `WaveformTTSProvider` when the engine returns numeric waveform samples.
-3. Register it through `create_tts_batch_generator()` in `epub_listener/infrastructure/tts/factory.py`.
-
-```python
-from pathlib import Path
-
-from epub_listener.infrastructure.tts.waveform import AudioChunk, WaveformTTSProvider
-
-
-class MyTTSProvider(WaveformTTSProvider):
-    def synthesize_chunk(
-        self,
-        text: str,
-        voice: str | None,
-        *,
-        work_dir: Path,
-        chunk_index: int,
-    ) -> AudioChunk:
-        samples, sample_rate = my_engine.synthesize(text, voice=voice)
-        return AudioChunk(samples, sample_rate)
-```
-
-`WaveformTTSProvider` supplies bounded text chunking, disk streaming, speed conversion, sentence-level transcript estimates, MP3 validation, temporary cleanup, and atomic replacement. A non-waveform provider owns one requested output file and must raise `TTSGenerationError` on failure.
-
-Batch execution, callback ordering, cancellation, and failure-wave behavior belong in a `TTSBatchGenerator` adapter that reuses the helpers in `infrastructure/tts/batch.py`. The application fails the build rather than emitting a partial audiobook.
-
-Every new option that can alter audio must participate in `Settings.tts_backend`; otherwise resume could reuse audio generated under a different model configuration.
-
-## Application boundary
-
-The use-case signature is `use_case.execute(command)`, where `command` is a `BuildAudiobookCommand`. In the CLI composition root, `BuildWorkspace` creates both the command and tracker to keep cached audio and tracker state co-located. Preserve that same-directory invariant when constructing the use case directly.
-
-## Adding a scraper
-
-1. Implement `NovelScraper` from `epub_listener/scrapers/base.py`.
-2. Place it in `epub_listener/scrapers/my_novel.py`.
-3. Add a `main()` CLI entry point.
-
-## Logging
-
-Unified logging writes to the console and a rotating file at `logs/epub_listener.log`. Configure it with `--log-level` or `EPUB_LISTENER_LOG_LEVEL`.
-
-## Release checklist
-
-Run the complete offline quality gate from an environment with the development extras:
-
-```bash
-black --check epub_listener tests
-ruff check epub_listener tests
-mypy epub_listener
-pytest -q
+```sh
+python -m black --check epub_listener tests
+python -m ruff check epub_listener tests
+python -m mypy epub_listener
+python -m pytest -q
 git diff --check
 ```
 
-Then run `pytest -m live` on hardware with the configured engines, build both artifacts with `uv build`, and install the wheel into a fresh virtual environment. Confirm that `epub-listener --help` works and perform one EPUB-to-MP3 conversion through an installed backend before publishing.
+The default suite selects `not live` through `pyproject.toml`.
+The current suite has 235 selected cases and 11 live cases.
+The original performance baseline has 196 selected cases.
+The 39 added parser cases characterize malformed and ordinary markup.
+No cases are removed during cleanup.
+
+Offline tests include real FFmpeg processing of synthetic audio.
+They also use fake external models, services, and failures to test specific contracts.
+Those fakes do not establish synthesis performance or acoustic quality.
+Run `python -m pytest -m live` only with suitable models, hardware, and network authorization.
+Live tests can download models, call external services, or fetch remote pages.
+They are not part of the reported local acceptance run.
+
+Do not regenerate expected outputs merely because a test fails.
+Preserve parser fixtures and transcript fixtures when refactoring.
+Tests cover durable output, error propagation, callback ordering, cancellation, resume identity, and transcript validation.
+When auditing tests, keep regression and boundary cases unless surviving coverage proves them redundant.
+An injected wrong alignment result must make retained transcript tests fail.
+Resume tests must have valid cache settings and transcripts before testing other invalidation guards.
+
+## Build and installed smoke
+
+Use a separate environment for packaging tools:
+
+```sh
+python -m pip install build wheel
+python -m build
+python3 -m venv /path/to/empty-smoke-env
+/path/to/empty-smoke-env/bin/python -m pip install dist/epub_listener-2.1.0-py3-none-any.whl
+/path/to/empty-smoke-env/bin/epub-listener --help
+```
+
+Run installed commands from a directory outside the source checkout.
+Confirm imports resolve inside the smoke environment.
+Check the wheel and source archive contents, package metadata, and installed dependencies.
+Perform a synthetic EPUB conversion and resume through a real installed backend.
+Compare decoded audio, chapter markers, transcript data, and errors with known outputs.
+A help-only smoke does not prove conversion works.
+
+Builds and checks create `build/`, `dist/`, `*.egg-info/`, bytecode, and tool caches.
+Git ignores these generated paths.
+Remove only artifacts you own; preserve environments, books, and audit evidence.
+For a clean checkout, build from a task-owned source copy and direct logs outside the repository.
+
+## Extending adapters
+
+Implement `TTSProvider` from `infrastructure/tts/ports.py` for a new transport.
+For waveform engines, subclass `WaveformTTSProvider` and implement `synthesize_chunk` returning `AudioChunk`.
+Register backend selection in `create_tts_batch_generator()`.
+Keep model-specific work outside the application layer.
+
+The waveform base supplies chunking, format checks, pause insertion, speed filters, transcript estimates, and chapter publication.
+A provider must complete durable output before reporting its duration.
+Batch callbacks run serially and must identify submitted chapters exactly once.
+A failure must prevent assembly of a partial book.
+
+Include output-affecting options in the backend identity and test invalidation.
+The existing identity scheme has limits described in [Models](MODELS.md#resume-identity).
+Do not assume it is a content-addressed cache.
+Direct use-case callers own workspace lifecycle and must place tracker state beside chapter audio.
+
+## Scrapers
+
+Implement `NovelScraper` and provide an explicit entry point.
+The current Worm scraper has offline request-failure and output-publication tests.
+Those tests do not prove the current remote website still matches its selectors.
+
+## Specialized repair script
+
+`scripts/repair_lord_of_the_mysteries.py` is a separate, book-specific utility.
+It expects a 1,409-chapter PDF and an EPUB missing exactly ten numbered chapters.
+It needs PyMuPDF, which is not a declared converter dependency.
+Its arguments are `source_epub source_pdf output_epub --report report.json`.
+It writes a repaired EPUB and a report at the supplied destinations.
+It is not a generic repair command, installed entry point, or part of the converter's correctness claim.
+The cleanup retains it because lack of internal callers does not establish that its user workflow is obsolete.
+No private input is used to execute it during acceptance.
+
+## Performance evidence
+
+See [Performance](PERFORMANCE.md) for measured boundaries and limitations.
+Use completed work, excluded warmups, repeated samples, and recorded power/load conditions for comparisons.
+Keep performance evidence outside the source tree.
+Do not interpret unit-test durations, stub synthesis, or instrumented profiles as production throughput.
