@@ -1,16 +1,20 @@
 """CLI argument parser."""
 
+from __future__ import annotations
+
 import argparse
 import json
 from pathlib import Path
-from typing import Any
-
-from pydantic import ValidationError
+from typing import TYPE_CHECKING, Any
 
 from epub_listener.concurrency import CONCURRENCY_CHOICES
-from epub_listener.config import Settings
 from epub_listener.domain.exceptions import ConfigurationError
 from epub_listener.domain.tts import COMMAND_OUTPUT_FORMATS, TTS_ENGINE_CHOICES
+
+if TYPE_CHECKING:
+    from pydantic import ValidationError
+
+    from epub_listener.config import Settings
 
 
 def parse_args() -> Settings:
@@ -214,6 +218,11 @@ def parse_args() -> Settings:
     )
 
     ns = parser.parse_args()
+
+    from pydantic import ValidationError
+
+    from epub_listener.config import Settings
+
     try:
         return Settings(**vars(ns))
     except ValidationError as exc:

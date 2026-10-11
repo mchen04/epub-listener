@@ -8,6 +8,9 @@ from epub_listener import config as config_module
 from epub_listener.application.commands import BuildAudiobookCommand
 from epub_listener.config import Settings
 from epub_listener.domain.exceptions import ConfigurationError, EpubListenerError
+from epub_listener.infrastructure.tts import factory as factory_module
+from epub_listener.infrastructure.tts.edge_tts import DEFAULT_VOICE as EDGE_DEFAULT_VOICE
+from epub_listener.infrastructure.tts.kokoro_tts import DEFAULT_VOICE as KOKORO_DEFAULT_VOICE
 
 
 def _settings(tmp_path: Path, **overrides: Any) -> Settings:
@@ -57,7 +60,7 @@ def _install_main_fakes(
     monkeypatch.setattr(main_module, "JsonProgressTracker", FakeTracker)
     monkeypatch.setattr(main_module, "BuildAudiobookUseCase", FakeUseCase)
     monkeypatch.setattr(
-        main_module,
+        factory_module,
         "create_tts_batch_generator",
         lambda **kwargs: FakeBatchGenerator(),
     )
@@ -205,16 +208,14 @@ def test_workspace_command_uses_effective_default_voice_for_generation_key(
     workspace = main_module.BuildWorkspace(tmp_path / "work", auto_created=False)
 
     implicit_edge = workspace.create_command(_settings(tmp_path))
-    explicit_edge = workspace.create_command(
-        _settings(tmp_path, voice=main_module.EDGE_DEFAULT_VOICE)
-    )
+    explicit_edge = workspace.create_command(_settings(tmp_path, voice=EDGE_DEFAULT_VOICE))
     implicit_kokoro = workspace.create_command(_settings(tmp_path, use_kokoro=True))
 
-    assert implicit_edge.voice == main_module.EDGE_DEFAULT_VOICE
+    assert implicit_edge.voice == EDGE_DEFAULT_VOICE
     assert implicit_edge.generation_key == explicit_edge.generation_key
-    assert f"voice={main_module.EDGE_DEFAULT_VOICE}" in implicit_edge.generation_key
-    assert implicit_kokoro.voice == main_module.KOKORO_DEFAULT_VOICE
-    assert f"voice={main_module.KOKORO_DEFAULT_VOICE}" in implicit_kokoro.generation_key
+    assert f"voice={EDGE_DEFAULT_VOICE}" in implicit_edge.generation_key
+    assert implicit_kokoro.voice == KOKORO_DEFAULT_VOICE
+    assert f"voice={KOKORO_DEFAULT_VOICE}" in implicit_kokoro.generation_key
 
     # Pin fastkoko availability: the MLX key names the active model, so it
     # differs between the FastKokoro engine and the mlx-audio fallback.
