@@ -58,7 +58,7 @@ def _transformers_pipeline(**kwargs: Any) -> Any:
 
 
 def resolve_device(requested: str) -> str | int:
-    """Resolve ``auto`` to the fastest available PyTorch device."""
+    """Resolve ``auto`` by preference: CUDA, then MPS, then CPU."""
     if requested != "auto":
         return requested
     try:

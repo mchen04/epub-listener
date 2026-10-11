@@ -1,15 +1,9 @@
-"""Apple MLX implementation of the Kokoro-82M TTS provider.
+"""Apple MLX Kokoro adapter with optional FastKokoro support.
 
-Uses the FastKokoro engine (github: local `fastkoko` package) when installed:
-  - fixes two upstream mlx-audio numerical bugs (iSTFT COLA normalization,
-    AdainResBlk1d upsample misalignment) so output matches the PyTorch
-    reference model — the old +2.7 dB OUTPUT_GAIN hack is gone;
-  - folds weight-norm, fuses AdaIN, caches the voice pack;
-  - optional weight quantization via EPUB_KOKORO_QUANT_BITS (unset = bf16);
-  - reports word-level timestamps (previously sentence-level only).
-
-Falls back to the plain mlx-audio path (with the legacy gain hack) when
-fastkoko is not installed.
+Prefer the separate ``fastkoko`` package when installed. Otherwise, use
+mlx-audio with the existing output gain. Token cues are captured when
+available; chunk spans provide sentence estimates otherwise. Adapter tests
+do not establish relative engine speed or acoustic fidelity.
 """
 
 from __future__ import annotations
@@ -39,8 +33,7 @@ logger = logging.getLogger(__name__)
 SAMPLE_RATE = 24_000
 DEFAULT_VOICE = "af_heart"
 MODEL_REPO = "mlx-community/Kokoro-82M-bf16"
-# Legacy fallback only (see module docstring): the *unfixed* converted decoder
-# is 2.7 dB quieter than the PyTorch reference.
+# Existing gain for the mlx-audio fallback only.
 OUTPUT_GAIN_DB = 2.7
 OUTPUT_GAIN = 10 ** (OUTPUT_GAIN_DB / 20)
 
@@ -60,14 +53,10 @@ DEFAULT_PRESET = "ship-q8"
 def _get_engine(preset: str | None = None) -> Any | None:
     """FastKokoro engine for `preset`, or None if fastkoko is not installed.
 
-    Presets: "ship-q8" (default; 114 MB artifact, passes every
-    floor-calibrated quality gate), "ship-q4" (87 MB, slight worst-case
-    timbre shift), "exact" (fp32, bit-clean vs the PyTorch reference),
-    "student-fast" (distilled ~10M params, far faster; af_heart only,
-    speed 1.0 only, no per-token timestamps).
-
-    Falls back to EPUB_KOKORO_PRESET when no preset is passed. Engines are
-    cached per preset so a mixed-preset process loads each one once.
+    The default preset is "ship-q8". The CLI restricts student presets to
+    af_heart and +0% speed. Requested presets require FastKokoro.
+    EPUB_KOKORO_PRESET supplies a preset when none is passed explicitly.
+    Engines are cached by preset.
     """
     _quiet_phonemizer()
     env_preset = os.environ.get("EPUB_KOKORO_PRESET", "").strip()

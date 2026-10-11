@@ -268,9 +268,8 @@ class KokoroParallelTTSBatchGenerator:
 
     def __init__(self, max_workers: int = 4, *, hybrid_mps: bool = False) -> None:
         self.hybrid_mps = hybrid_mps
-        # The tuned hybrid topology is exactly one native-MPS worker and one
-        # internally multithreaded CPU worker. Additional model copies reduce
-        # throughput on unified-memory Apple Silicon.
+        # Hybrid mode uses one MPS worker and one CPU worker.
+        # Ignore max_workers for this fixed topology.
         self.max_workers = 2 if hybrid_mps else max(1, max_workers)
 
     def generate_many(

@@ -1,9 +1,9 @@
 # Epub Listener Transcript Format (v1)
 
 A generated audiobook MP3 may carry a timestamped transcript of its own
-narration. The transcript is produced at TTS generation time (where word
-timings are exact and free), embedded inside the MP3, and consumed by
-listening apps (e.g. Hark's read-along view). This document is the contract:
+narration. The producer captures engine cues or estimates sentence spans during synthesis.
+These timestamps do not establish exact acoustic alignment.
+Listening apps can read the embedded data independently. This document is the contract:
 a consumer should be able to implement a parser from this file alone.
 
 ## Embedding
@@ -29,7 +29,7 @@ a consumer should be able to implement a parser from this file alone.
 {
   "format": "epub-listener-transcript",
   "version": 1,
-  "producer": "epub_listener/1.0",
+  "producer": "epub_listener/2.1.0",
   "engine": "kokoro",
   "generationKey": "tts_backend=kokoro\nvoice=af_heart\nspeed=+0%",
   "language": "en",
@@ -123,8 +123,10 @@ without affecting audio import:
 
 - compressed frame size: reject above **24 MiB**;
 - decompressed size: reject above `1 MiB + 600 bytes × ceil(duration-seconds)`,
-  and always above an absolute **128 MiB** ceiling. (Measured density for
-  English narration is ≈ 200 bytes/s; the cap has ~3× headroom.)
+  and always above an absolute **128 MiB** ceiling.
+
+These are consumer requirements, not measured density guarantees.
+The Python producer validates structure but does not enforce these size caps.
 
 ## Validation summary (normative)
 
@@ -142,6 +144,28 @@ a `"word"` granularity chapter with any sentences.
 
 `tests/fixtures/transcripts/valid-word.json` and
 `tests/fixtures/transcripts/valid-sentence.json` are canonical fixture
-documents; byte-identical copies live in each consuming repo and both sides'
-validators must accept them. Producer and consumer test suites both validate
-these fixtures against their own implementation of this contract.
+documents for this producer. Its tests validate and round-trip these fixtures.
+Consumer implementations and copies in other repositories are not verified by this suite.
+
+## Producer behavior and limits
+
+Capture is enabled by default and can be disabled with `--no-transcript`.
+Chapter files use `epub-listener-chapter-transcript`, version 1, with `chapterId`, `engine`, `granularity`, and the same sentence records.
+They are stored as `chap_<id>.transcript.json` beside cached chapter audio.
+The producer requires every positive-duration segment's chapter file when combining a book.
+A missing or corrupt file skips the whole embedding attempt with a warning.
+Sparse chapter arrays remain valid for consumers, but this producer does not intentionally publish partial transcript books.
+
+The producer stores Python string offsets, measured in Unicode code points.
+Consumers using UTF-16 indexing must account for non-BMP characters.
+The producer currently writes `language` as `en`; it does not infer language from the EPUB.
+Edge cues include an existing 100 ms offset correction, whose acoustic accuracy is not revalidated here.
+Hugging Face, command, and token-free model outputs use sentence estimates based on chunk durations and character counts.
+
+Embedding updates ID3 tags in place and then durably writes the sidecar.
+It replaces existing GEOB frames, including unrelated GEOB frames.
+It retains chapter frames, though their physical order can change; consumers should sort chapter markers by start time.
+Embedding and sidecar writes are not a single transaction.
+A write failure can leave partially updated tags or an old sidecar while the CLI reports audio build success.
+Disabling transcripts does not remove an old sidecar at the output path.
+The schema does not certify acoustic quality, player compatibility, or concurrent workspace safety.

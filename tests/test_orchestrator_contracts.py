@@ -372,10 +372,18 @@ def test_use_case_regenerates_stale_cached_audio(
     chapter = Chapter("0000", "One", "one " * 50)
     work_dir = tmp_path / "work"
     tracker = JsonProgressTracker(work_dir)
+    command = _command(tmp_path)
     audio_path = work_dir / "chap_0000.mp3"
     if payload is not None:
         audio_path.write_bytes(payload)
-    tracker.mark_complete(chapter.id, chapter.checksum, 1000)
+    write_chapter_transcript(
+        transcript_path_for(audio_path),
+        chapter.id,
+        "fake",
+        [SentenceCue("Stub sentence.", 0, 1000, ())],
+    )
+    tracker.mark_complete(chapter.id, chapter.checksum, 1000, command.generation_key)
+    assert tracker.is_complete(chapter.id, chapter.checksum, command.generation_key)
 
     tts = WritingBatchGenerator(duration_ms=3333)
     assembler = CapturingAssembler()
@@ -387,7 +395,7 @@ def test_use_case_regenerates_stale_cached_audio(
         tracker=JsonProgressTracker(work_dir),
     )
 
-    output = use_case.execute(_command(tmp_path))
+    output = use_case.execute(command)
 
     assert output.exists()
     assert tts.generated == ["0000"]
@@ -415,7 +423,14 @@ def test_use_case_regenerates_when_tts_generation_settings_change(
     tracker = JsonProgressTracker(work_dir)
     audio_path = work_dir / "chap_0000.mp3"
     audio_path.write_bytes(b"old audio")
+    write_chapter_transcript(
+        transcript_path_for(audio_path),
+        chapter.id,
+        "fake",
+        [SentenceCue("Stub sentence.", 0, 1000, ())],
+    )
     tracker.mark_complete(chapter.id, chapter.checksum, 1000, original_key)
+    assert tracker.is_complete(chapter.id, chapter.checksum, original_key)
 
     command = BuildAudiobookCommand(
         input_epub=original_command.input_epub,

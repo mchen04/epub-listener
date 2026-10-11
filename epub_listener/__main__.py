@@ -1,5 +1,7 @@
 """Composition root and entry point."""
 
+from __future__ import annotations
+
 import logging
 import shutil
 import sys
@@ -8,22 +10,17 @@ from dataclasses import dataclass
 from importlib.util import find_spec
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from epub_listener.application.commands import BuildAudiobookCommand
 from epub_listener.application.orchestrator import BuildAudiobookUseCase
 from epub_listener.application.ports import ProgressTracker
 from epub_listener.cli import parse_args
-from epub_listener.config import Settings
 from epub_listener.domain.exceptions import ConfigurationError, EpubListenerError, ResumeError
-from epub_listener.infrastructure.media.ffmpeg_assembler import FFmpegMediaAssembler
-from epub_listener.infrastructure.media.metadata_builder import FFmpegMetadataBuilder
-from epub_listener.infrastructure.media.transcript_embedder import Id3TranscriptEmbedder
-from epub_listener.infrastructure.parsers.ebooklib_parser import EbookLibParser
 from epub_listener.infrastructure.persistence.json_tracker import JsonProgressTracker
-from epub_listener.infrastructure.tts.command_tts import parse_command_template
-from epub_listener.infrastructure.tts.edge_tts import DEFAULT_VOICE as EDGE_DEFAULT_VOICE
-from epub_listener.infrastructure.tts.factory import create_tts_batch_generator
-from epub_listener.infrastructure.tts.kokoro_tts import DEFAULT_VOICE as KOKORO_DEFAULT_VOICE
+
+if TYPE_CHECKING:
+    from epub_listener.config import Settings
 
 _LOG_HANDLER_NAMES = {"epub_listener_console", "epub_listener_file"}
 
@@ -34,6 +31,11 @@ class BuildWorkspace:
     auto_created: bool
 
     def create_command(self, settings: Settings) -> BuildAudiobookCommand:
+        from epub_listener.infrastructure.tts.edge_tts import DEFAULT_VOICE as EDGE_DEFAULT_VOICE
+        from epub_listener.infrastructure.tts.kokoro_tts import (
+            DEFAULT_VOICE as KOKORO_DEFAULT_VOICE,
+        )
+
         voice = settings.resolved_voice
         if voice is None and settings.tts_engine == "edge":
             voice = EDGE_DEFAULT_VOICE
@@ -128,6 +130,8 @@ def validate_runtime(settings: Settings) -> None:
     ):
         raise ConfigurationError("MLX Kokoro is not installed. Run: pip install '.[mlx]'")
     if engine == "command":
+        from epub_listener.infrastructure.tts.command_tts import parse_command_template
+
         if settings.model_command is None:
             raise ConfigurationError("--engine command requires --model-command")
         executable = parse_command_template(settings.model_command)[0]
@@ -143,6 +147,13 @@ def main() -> int:
     logging_ready = False
     try:
         settings = parse_args()
+
+        from epub_listener.infrastructure.media.ffmpeg_assembler import FFmpegMediaAssembler
+        from epub_listener.infrastructure.media.metadata_builder import FFmpegMetadataBuilder
+        from epub_listener.infrastructure.media.transcript_embedder import Id3TranscriptEmbedder
+        from epub_listener.infrastructure.parsers.ebooklib_parser import EbookLibParser
+        from epub_listener.infrastructure.tts.factory import create_tts_batch_generator
+
         validate_runtime(settings)
         setup_logging(settings.log_level)
         logging_ready = True
