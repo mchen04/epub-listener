@@ -97,7 +97,7 @@ def anchor_cues(text: str, cues: list[RawWordCue]) -> list[RawWordCue]:
         needle = cue.text.strip().lower()
         window_end = min(len(text), cursor + max(240, 4 * len(needle)))
         found = lowered.find(needle, cursor, window_end) if needle else -1
-        if found >= 0 and _is_word_aligned(lowered, found, len(needle)):
+        if found >= 0 and _is_word_aligned(lowered, found):
             anchored.append(
                 RawWordCue(cue.text, cue.start_ms, cue.end_ms, found, found + len(needle))
             )
@@ -121,7 +121,7 @@ def _token_at(text: str, cursor: int) -> tuple[int, int]:
     return (start, end) if end > start else (cursor, cursor)
 
 
-def _is_word_aligned(lowered: str, start: int, length: int) -> bool:
+def _is_word_aligned(lowered: str, start: int) -> bool:
     before = lowered[start - 1] if start > 0 else " "
     return not before.isalnum()
 
